@@ -37,10 +37,10 @@ public class Main {
         switch (choice) {
             case 1: printTable(pets); //Printing the table
             case 2: addPet(pets); //Adding a pet
-            case 3: System.out.println("Placeholder for build 2"); //TODO Add logic
-            case 4: System.out.println("Placeholder for build 2"); //TODO Add logic
-            case 5: System.out.println("Placeholder for build 3"); //TODO Add logic
-            case 6: System.out.println("Placeholder for build 3"); //TODO Add logic
+            case 3: System.out.println("Placeholder for build 3"); //TODO Add logic
+            case 4: System.out.println("Placeholder for build 3"); //TODO Add logic
+            case 5: searchPetName(pets); //Searching for pets by name
+            case 6: searchPetAge(pets); //Searching for pets by age
             case 7: System.exit(0); //Exiting the program
             default: menu(pets); //No selection defaults back to the main menu
         }
@@ -95,6 +95,17 @@ public class Main {
         menu(pets); //Returning to the main menu
     }
 
+    //Overloading this method to handle a temporary arrayList as well
+    public static void printTable(ArrayList<Pets> pets,ArrayList<Pets> searchArray) {
+        printHeader(); //Printing the header
+        for (Pets pet : searchArray) { //Printing each pet
+            System.out.printf("| %-3s | %-10s | %-4s |\n", pet.getID(), pet.getName(),pet.getAge());
+        }
+        printFooter(); //Printing the footer
+        System.out.printf("Rows in set: %d\n",searchArray.size()); //Printing the size of the arrayList/# of rows
+        menu(pets); //Returning to the main menu
+    }
+
     //A method to print the header
     public static void printHeader() {
         System.out.println("+--------------------------+");
@@ -106,7 +117,34 @@ public class Main {
     public static void printFooter() {
         System.out.println("+--------------------------+");
     }
+
+    //Searching for pets by name
+    public static void searchPetName(ArrayList<Pets> pets) {
+        ArrayList<Pets> petSearch = new ArrayList<>();
+        System.out.println("Enter name to search: ");
+        String userSearch = input.next();
+        for (Pets pet : pets) {
+            if (pet.getName().equalsIgnoreCase(userSearch)) {
+                petSearch.add(pet);
+            }
+        }
+        printTable(pets, petSearch);
+    }
+
+    //Searching for pets by age
+    public static void searchPetAge(ArrayList<Pets> pets) {
+        ArrayList<Pets> petSearch = new ArrayList<>();
+        System.out.println("Enter age to search: ");
+        int userSearch = input.nextInt();
+        for (Pets pet : pets) {
+            if (pet.getAge() == userSearch) {
+                petSearch.add(pet);
+            }
+        }
+        printTable(pets, petSearch);
+    }
 }
+
 
 /*
 Sources:
