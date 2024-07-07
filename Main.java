@@ -5,6 +5,7 @@ CSC 422 Assignment 1 Release 1
 I Chase Dallmann, hereby certify all this code is written by myself and not copied from any other source.
  */
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -35,10 +36,13 @@ public class Main {
     public static void menuLogic(int choice, ArrayList<Pets> pets) {
         //Using a switch to handle to selection
         switch (choice) {
-            case 1: printTable(pets); //Printing the table
+            case 1: {
+                printTable(pets);//Printing the table
+                menu(pets); //Returning to the main menu
+            }
             case 2: addPet(pets); //Adding a pet
-            case 3: System.out.println("Placeholder for build 3"); //TODO Add logic
-            case 4: System.out.println("Placeholder for build 3"); //TODO Add logic
+            case 3: updatePet(pets); //Updating a pets information
+            case 4: removePet(pets); // Removing a pet from the list
             case 5: searchPetName(pets); //Searching for pets by name
             case 6: searchPetAge(pets); //Searching for pets by age
             case 7: System.exit(0); //Exiting the program
@@ -50,16 +54,18 @@ public class Main {
     //A method for adding pets
     public static void addPet(ArrayList<Pets> pets) {
         boolean exitAddPets = false; //Creating a boolean for a while loop
+        input.nextLine(); //Clearing the scanner
         while (!exitAddPets) { //Looping through until the user types "done"
             int petID = (pets.size()); //PetID is the size of the arrayList
-            System.out.println("What is the name of the pet?: ");
-            String petName = input.next(); //Getting the pet name from a user input
-            if (petName.equalsIgnoreCase("done")) {
+            System.out.println("Please enter the name and the age of the pet: ");
+            String petInfo = input.nextLine(); //Getting the pet name from a user input
+            if (petInfo.equalsIgnoreCase("done")) {
                 exitAddPets = true; //If done is typed set the boolean to true to break out of the while loop
             } else {
                 try {
-                    System.out.println("What is the pets age?: ");
-                    int petAge = input.nextInt();
+                    String[] petInfoParts = petInfo.split("\\s");
+                    String petName = petInfoParts[0];
+                    int petAge = Integer.parseInt(petInfoParts[1]);
                     if (petAge > 0 && petAge < 150) { //Making sure the pet is within a realistic age
                         Pets newPet = new Pets(petID, petName, petAge); //Creating a pet object
                         pets.add(newPet); //Adding the pet object to the arrayList
@@ -76,13 +82,49 @@ public class Main {
         menu(pets); //Returning to the main menu
     }
 
-    /*
+    //Updating a pets information
     public static void updatePet(ArrayList<Pets> pets) {
         printTable(pets);
-        System.out.println("What is the ID of the pet you would like to update: ");
-        int petID = input.nextInt();
+        //Error handling incase for updating a pet
+        try {
+            System.out.println("What is the ID of the pet you would like to update: ");
+            int petID = input.nextInt();
+            System.out.println("Please enter the name and the age of the pet: ");
+            input.nextLine(); //Clearing the scanner
+            String petInfo = input.nextLine(); //Getting the pet name from a user input
+            String[] petInfoParts = petInfo.split("\\s");
+            String petName = petInfoParts[0];
+            int petAge = Integer.parseInt(petInfoParts[1]);
+            String oldName = pets.get(petID).getName(); //Previous Name
+            int oldAge = pets.get(petID).getAge(); //Previous Age
+            pets.get(petID).setName(petName); //Setting the new Name
+            pets.get(petID).setAge(petAge); //Setting the new Age
+            System.out.println("UPDATE SUCCESSFUL: " + oldName + " " + oldAge + " has been changed to " + petName + " "
+            + petAge);
+        } catch (Exception e) {
+            System.out.println("ERROR: Unable to update pet properly " + e);
+        }
+        menu(pets); //Returning to the main menu
     }
-    */
+
+    //Removing a pet from the ArrayList
+    public static void removePet(ArrayList<Pets> pets) {
+        printTable(pets);
+        System.out.println("What is the ID of the pet you would like to remove: ");
+        int petID =  input.nextInt();
+        String petName = pets.get(petID).getName();
+        int petAge = pets.get(petID).getAge();
+        pets.remove(petID);
+        System.out.println("The pet " + petName + " " + petAge + " has been removed from the list of pets.");
+        //Decrementing all the ID's after the pet that was removed
+        for (Pets pet: pets) {
+            if ((petID < pet.getID())) {
+                pet.setID(pet.getID() - 1);
+            }
+        }
+        menu(pets); //Returning to the main menu
+    }
+
 
     //Printing the table/arrayList
     public static void printTable(ArrayList<Pets> pets) {
@@ -92,7 +134,6 @@ public class Main {
         }
         printFooter(); //Printing the footer
         System.out.printf("Rows in set: %d\n",pets.size()); //Printing the size of the arrayList/# of rows
-        menu(pets); //Returning to the main menu
     }
 
     //Overloading this method to handle a temporary arrayList as well
@@ -103,7 +144,6 @@ public class Main {
         }
         printFooter(); //Printing the footer
         System.out.printf("Rows in set: %d\n",searchArray.size()); //Printing the size of the arrayList/# of rows
-        menu(pets); //Returning to the main menu
     }
 
     //A method to print the header
@@ -129,6 +169,7 @@ public class Main {
             }
         }
         printTable(pets, petSearch);
+        menu(pets); //Returning to the main menu
     }
 
     //Searching for pets by age
@@ -142,6 +183,7 @@ public class Main {
             }
         }
         printTable(pets, petSearch);
+        menu(pets); //Returning to the main menu
     }
 }
 
