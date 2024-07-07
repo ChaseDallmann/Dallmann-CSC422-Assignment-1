@@ -45,7 +45,10 @@ public class Main {
             case 4: removePet(pets); // Removing a pet from the list
             case 5: searchPetName(pets); //Searching for pets by name
             case 6: searchPetAge(pets); //Searching for pets by age
-            case 7: System.exit(0); //Exiting the program
+            case 7: {
+                System.out.println("Goodbye");
+                System.exit(0); //Exiting the program
+            }
             default: menu(pets); //No selection defaults back to the main menu
         }
         menu(pets); //Going back to the main menu after a selection has taken place
