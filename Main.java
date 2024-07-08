@@ -1,7 +1,7 @@
 /*
 Chase Dallmann
 CSC 422 Assignment 1 Release 1
-7/5/2024
+7/7/2024
 I Chase Dallmann, hereby certify all this code is written by myself and not copied from any other source.
  */
 import java.util.ArrayList;
