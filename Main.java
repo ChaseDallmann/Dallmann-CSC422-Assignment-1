@@ -77,14 +77,17 @@ public class Main {
 
     //A method for adding pets
     public static void addPet(ArrayList<Pets> pets) {
-        int petCount = 0;
         input.nextLine(); //Clearing the scanner
         boolean exitAddPets = false; //Creating a boolean for a while loop
         while (!exitAddPets) { //Looping through until the user types "done"
             int petID = (pets.size()); //PetID is the size of the arrayList
+            if (pets.size() > 4 ) {
+                System.out.println("ERROR: Unable to add pet. Pet database at maximum size");
+                break;
+            }
             System.out.println("Please enter the name and the age of the pet: ");
             String petInfo = input.nextLine(); //Getting the pet name from a user input
-            if (petInfo.equalsIgnoreCase("done") || petCount == 5) {
+            if (petInfo.equalsIgnoreCase("done")) {
                 exitAddPets = true; //If done is typed set the boolean to true to break out of the while loop
             } else {
                 try {
@@ -94,7 +97,6 @@ public class Main {
                     if (petAge > 0 && petAge <= 20) { //Making sure the pet is within a realistic age
                         Pets newPet = new Pets(petID, petName, petAge); //Creating a pet object
                         pets.add(newPet); //Adding the pet object to the arrayList
-                        petCount++;
                     } else {
                         System.out.printf("ERROR: %d is not a valid age\n", petAge);
                     }
@@ -209,22 +211,23 @@ public class Main {
         printTable(pets, petSearch);
     }
 
+    //Used to load the objects from the JSON database
     public static ArrayList<Pets> loadDatabase(ArrayList<Pets> pets) throws IOException, ClassNotFoundException {
         int petCount = 0;
-        File file = new File("Database.JSON");
+        File file = new File("Database.JSON"); //Checking if a JSON file exists
         if (!file.exists()) {
-            System.out.printf("File not found %s creating new file.\n", file.getName());
+            System.out.printf("File not found %s creating new file.\n", file.getName()); //Create the file if it doesnt exist
             return pets;
         }
-        FileInputStream fis = new FileInputStream("Database.JSON");
-        ObjectInputStream ois = new ObjectInputStream(fis);
+        FileInputStream fis = new FileInputStream("Database.JSON"); //Creating the file stream with the JSON
+        ObjectInputStream ois = new ObjectInputStream(fis); //Creating an object stream to add objects to the file
         try {
-            while(true) {
+            while(true) { //Looping through until the EOF Exception is caught when the end of the file is reached
                 if (petCount > 5) {
-                    throw new RuntimeException("ERROR: Database File too large. The database file has more then 5 lines");
+                    throw new RuntimeException("ERROR: Database File too large. The database file has more then 5 lines"); //Covering the case of the database having more then 5 entries
                 }
-                Pets loadedPet = (Pets) ois.readObject();
-                pets.add(loadedPet);
+                Pets loadedPet = (Pets) ois.readObject(); //Creating a new Pets object from the object
+                pets.add(loadedPet); //Adding the new Pets object to the pets ArrayList
                 petCount++;
             }
         } catch (ClassNotFoundException e) {
@@ -237,9 +240,11 @@ public class Main {
         return pets;
     }
 
+    //Used to save the Objects to the JSON database
     public static void saveDatabase(ArrayList<Pets> pets) throws IOException {
-        FileOutputStream fos = new FileOutputStream("Database.JSON",true);
-        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        FileOutputStream fos = new FileOutputStream("Database.JSON"); //Creating a file output stream from the JSON
+        ObjectOutputStream oos = new ObjectOutputStream(fos); //Creating an object stream to save the Pets objects
+        //Saving each pet object in the pets array to the JSON as a serialized object
         for (Pets pet: pets) {
             oos.writeObject(pet);
         }
