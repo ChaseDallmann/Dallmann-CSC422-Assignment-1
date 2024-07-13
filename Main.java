@@ -4,21 +4,22 @@ CSC 422 Assignment 1 Release 1
 7/7/2024
 I Chase Dallmann, hereby certify all this code is written by myself and not copied from any other source.
  */
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
     static Scanner input = new Scanner(System.in);
 
-    public static void main(String[] args) {
-        ArrayList<Pets> pets = new ArrayList<>();
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        ArrayList<Pets> pets =new ArrayList<Pets>();
+        loadDatabase(pets);
         menu(pets);
+        input.close();
     }
 
     //The menu method that will display the menu for a user to select a choice
-    public static void menu(ArrayList<Pets> pets) {
+    public static void menu(ArrayList<Pets> pets) throws IOException {
         System.out.println("Pet Database Program.\n");
         System.out.print("1) View all pets\n" +
                 "2) Add more pets\n" +
@@ -33,20 +34,40 @@ public class Main {
     }
 
     //The logic for handling the selections
-    public static void menuLogic(int choice, ArrayList<Pets> pets) {
+    public static void menuLogic(int choice, ArrayList<Pets> pets) throws IOException {
         //Using a switch to handle to selection
         switch (choice) {
             case 1: {
                 printTable(pets);//Printing the table
-                menu(pets); //Returning to the main menu
+                break;
             }
-            case 2: addPet(pets); //Adding a pet
-            case 3: updatePet(pets); //Updating a pets information
-            case 4: removePet(pets); // Removing a pet from the list
-            case 5: searchPetName(pets); //Searching for pets by name
-            case 6: searchPetAge(pets); //Searching for pets by age
+            case 2: {
+                if (pets.size() <= 5) {
+                    addPet(pets); //Adding a pet
+                } else {
+                    System.out.println("ERROR: Database current holds the maximum number of pets");
+                }
+                break;
+            }
+            case 3: {
+                updatePet(pets); //Updating a pets information
+                break;
+            }
+            case 4: {
+                removePet(pets); // Removing a pet from the list
+                break;
+            }
+            case 5: {
+                searchPetName(pets); //Searching for pets by name
+                break;
+            }
+            case 6:  {
+                searchPetAge(pets); //Searching for pets by age
+                break;
+            }
             case 7: {
                 System.out.println("Goodbye");
+                saveDatabase(pets);
                 System.exit(0); //Exiting the program
             }
             default: menu(pets); //No selection defaults back to the main menu
@@ -56,33 +77,32 @@ public class Main {
 
     //A method for adding pets
     public static void addPet(ArrayList<Pets> pets) {
-        boolean exitAddPets = false; //Creating a boolean for a while loop
+        int petCount = 0;
         input.nextLine(); //Clearing the scanner
+        boolean exitAddPets = false; //Creating a boolean for a while loop
         while (!exitAddPets) { //Looping through until the user types "done"
             int petID = (pets.size()); //PetID is the size of the arrayList
             System.out.println("Please enter the name and the age of the pet: ");
             String petInfo = input.nextLine(); //Getting the pet name from a user input
-            if (petInfo.equalsIgnoreCase("done")) {
+            if (petInfo.equalsIgnoreCase("done") || petCount == 5) {
                 exitAddPets = true; //If done is typed set the boolean to true to break out of the while loop
             } else {
                 try {
                     String[] petInfoParts = petInfo.split("\\s");
                     String petName = petInfoParts[0];
                     int petAge = Integer.parseInt(petInfoParts[1]);
-                    if (petAge > 0 && petAge < 150) { //Making sure the pet is within a realistic age
+                    if (petAge > 0 && petAge <= 20) { //Making sure the pet is within a realistic age
                         Pets newPet = new Pets(petID, petName, petAge); //Creating a pet object
                         pets.add(newPet); //Adding the pet object to the arrayList
+                        petCount++;
                     } else {
-                        System.out.println("ERROR: You must enter a number between 1 and 150 for age");
-                        input.nextLine();
+                        System.out.printf("ERROR: %d is not a valid age\n", petAge);
                     }
-                } catch (InputMismatchException e) { //Error handling
-                    System.out.println("ERROR: You must enter a number between 1 and 150 for age");
-                    input.nextLine();
+                } catch (Exception e) { //Error handling
+                    System.out.printf("ERROR: %s invalid entry\n", e);
                 }
             }
         }
-        menu(pets); //Returning to the main menu
     }
 
     //Updating a pets information
@@ -107,11 +127,13 @@ public class Main {
         } catch (Exception e) {
             System.out.println("ERROR: Unable to update pet properly " + e);
         }
-        menu(pets); //Returning to the main menu
     }
 
     //Removing a pet from the ArrayList
-    public static void removePet(ArrayList<Pets> pets) {
+    public static void removePet(ArrayList<Pets> pets) throws IOException {
+        if (pets.isEmpty()) {
+            System.out.println("No pets in array");
+        } else {
         printTable(pets);
         System.out.println("What is the ID of the pet you would like to remove: ");
         int petID =  input.nextInt();
@@ -123,9 +145,9 @@ public class Main {
         for (Pets pet: pets) {
             if ((petID < pet.getID())) {
                 pet.setID(pet.getID() - 1);
+                }
             }
         }
-        menu(pets); //Returning to the main menu
     }
 
 
@@ -172,7 +194,6 @@ public class Main {
             }
         }
         printTable(pets, petSearch);
-        menu(pets); //Returning to the main menu
     }
 
     //Searching for pets by age
@@ -186,7 +207,45 @@ public class Main {
             }
         }
         printTable(pets, petSearch);
-        menu(pets); //Returning to the main menu
+    }
+
+    public static ArrayList<Pets> loadDatabase(ArrayList<Pets> pets) throws IOException, ClassNotFoundException {
+        int petCount = 0;
+        File file = new File("Database.JSON");
+        if (!file.exists()) {
+            System.out.printf("File not found %s creating new file.\n", file.getName());
+            return pets;
+        }
+        FileInputStream fis = new FileInputStream("Database.JSON");
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        try {
+            while(true) {
+                if (petCount > 5) {
+                    throw new RuntimeException("ERROR: Database File too large. The database file has more then 5 lines");
+                }
+                Pets loadedPet = (Pets) ois.readObject();
+                pets.add(loadedPet);
+                petCount++;
+            }
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (EOFException eof) {
+        } finally {
+            ois.close();
+            fis.close();
+        }
+        return pets;
+    }
+
+    public static void saveDatabase(ArrayList<Pets> pets) throws IOException {
+        FileOutputStream fos = new FileOutputStream("Database.JSON",true);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        for (Pets pet: pets) {
+            oos.writeObject(pet);
+        }
+        oos.flush();
+        oos.close();
+        fos.close();
     }
 }
 
