@@ -88,7 +88,7 @@ public class Main {
         while (!exitAddPets) { //Looping through until the user types "done"
             int petID = (pets.size()); //PetID is the size of the arrayList
             if (pets.size() > 4 ) {
-                System.out.println("ERROR: Unable to add pet. Pet database at maximum size");
+                System.out.printf("ERROR: Unable to add pet. Pet database at maximum size %d of 5\n", pets.size());
                 break;
             }
             System.out.println("Please enter the name and the age of the pet: ");
@@ -99,8 +99,8 @@ public class Main {
                 } else {
                     try {
                         String[] petInfoParts = petInfo.split("\\s");
-                        if (petInfoParts.length >= 3) { //Error handling for 3 or more inputs
-                            System.out.printf("ERROR: %s is not a valid entry user has tried to enter %d inputs \n", Arrays.toString(petInfoParts),petInfoParts.length);
+                        if (!(petInfoParts.length == 2)) { //Error handling for 3 or more inputs
+                            System.out.printf("ERROR: %s is not a valid entry user has tried to enter %d input(s) and 2 are needed NAME, AGE \n", Arrays.toString(petInfoParts),petInfoParts.length);
                             break;
                         }
                         String petName = petInfoParts[0];
@@ -108,6 +108,10 @@ public class Main {
                         if (petAge > 0 && petAge <= 20) { //Making sure the pet is within a realistic age
                             Pets newPet = new Pets(petID, petName, petAge); //Creating a pet object
                             pets.add(newPet); //Adding the pet object to the arrayList
+                            if (pets.size() == 5) {
+                                System.out.printf("Maximum pet database size reached %d of 5 pets exist in your database.\n", pets.size());
+                                break;
+                            }
                         } else {
                             System.out.printf("ERROR: %d is not a valid age\n", petAge); //Error handling for invalid age
                         }
@@ -137,7 +141,7 @@ public class Main {
             String petInfo = input.nextLine(); //Getting the pet name and age from a user input
             if (!petInfo.isEmpty()) {
                 String[] petInfoParts = petInfo.split("\\s");
-                if (petInfoParts.length < 3) {
+                if (petInfoParts.length == 2) {
                     petName = petInfoParts[0]; // Getting the petName
                     petAge = Integer.parseInt(petInfoParts[1]); //Getting the petAge
                     String oldName = pets.get(petID).getName(); //Previous Name
@@ -147,7 +151,7 @@ public class Main {
                     System.out.println("UPDATE SUCCESSFUL: " + oldName + " " + oldAge + " has been changed to " + petName + " "
                             + petAge); //Update success message
                 } else {
-                    System.out.printf("ERROR: Invalid number of entries detected %d\n", petInfoParts.length); //Invalid number of entries
+                    System.out.printf("ERROR: %s was entered. Invalid number of entries. 2 entries are needed NAME, AGE. Total detected = %d\n", Arrays.toString(petInfoParts),petInfoParts.length); //Invalid number of entries
                 }
             }
         } catch (NumberFormatException nfe) {
@@ -181,7 +185,7 @@ public class Main {
                 }
             }
         } catch (InputMismatchException ime) {
-            System.out.println("ERROR: Invalid ID entered");
+            System.out.printf("ERROR: Invalid ID entered. ID must be between 0 and %d\n", pets.size());
             input.nextLine();
         } catch (IndexOutOfBoundsException iob) {
             System.out.printf("ERROR: Invalid Index selected %d\n", petID);
@@ -250,8 +254,10 @@ public class Main {
                 }
                 printTable(pets, petSearch);
             } else {
+                //Error handling for an age that is below or above 0-20.
                 System.out.printf("ERROR: Invalid age entered %d\n", userSearch);
             }
+            //Error handling for a string entered instead of an age
         } catch (InputMismatchException ime) {
             System.out.println("ERROR: Invalid input. You must enter a number between 1-20 to search for.");
             input.nextLine();
@@ -312,4 +318,6 @@ https://www.geeksforgeeks.org/difference-between-next-and-nextline-methods-in-ja
 https://www.w3schools.com/java/java_user_input.asp
 https://www.baeldung.com/java-printstream-printf
 https://www.geeksforgeeks.org/arraylist-in-java/
+https://stackoverflow.com/questions/16111496/java-how-can-i-write-my-arraylist-to-a-file-and-read-load-that-file-to-the
+https://www.baeldung.com/java-scanner-buffer
  */
