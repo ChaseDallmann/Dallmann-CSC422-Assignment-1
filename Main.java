@@ -5,8 +5,7 @@ CSC 422 Assignment 1 Release 1
 I Chase Dallmann, hereby certify all this code is written by myself and not copied from any other source.
  */
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
     static Scanner input = new Scanner(System.in);
@@ -29,8 +28,14 @@ public class Main {
                 "6) Search pets by age\n" +
                 "7) Exit program\n");
         System.out.print("Your choice: ");
-        int userSelection = input.nextInt(); //Taking the users input
-        menuLogic(userSelection, pets); //Calling the logic for the selection
+        try {
+            int userSelection = input.nextInt(); //Taking the users input
+            menuLogic(userSelection, pets); //Calling the logic for the selection
+        } catch (InputMismatchException ime) {
+            System.out.printf("ERROR: Invalid selection please use 1-7 as the options only");
+            input.nextLine();
+            menu(pets);
+        }
     }
 
     //The logic for handling the selections
@@ -43,6 +48,7 @@ public class Main {
             }
             case 2: {
                 if (pets.size() <= 5) {
+                    input.nextLine();
                     addPet(pets); //Adding a pet
                 } else {
                     System.out.println("ERROR: Database current holds the maximum number of pets");
@@ -76,8 +82,8 @@ public class Main {
     }
 
     //A method for adding pets
-    public static void addPet(ArrayList<Pets> pets) {
-        input.nextLine(); //Clearing the scanner
+    public static void addPet(ArrayList<Pets> pets) throws IOException {
+        String petInfo = "";
         boolean exitAddPets = false; //Creating a boolean for a while loop
         while (!exitAddPets) { //Looping through until the user types "done"
             int petID = (pets.size()); //PetID is the size of the arrayList
@@ -86,29 +92,39 @@ public class Main {
                 break;
             }
             System.out.println("Please enter the name and the age of the pet: ");
-            String petInfo = input.nextLine(); //Getting the pet name from a user input
-            if (petInfo.equalsIgnoreCase("done")) {
-                exitAddPets = true; //If done is typed set the boolean to true to break out of the while loop
-            } else {
-                try {
-                    String[] petInfoParts = petInfo.split("\\s");
-                    String petName = petInfoParts[0];
-                    int petAge = Integer.parseInt(petInfoParts[1]);
-                    if (petAge > 0 && petAge <= 20) { //Making sure the pet is within a realistic age
-                        Pets newPet = new Pets(petID, petName, petAge); //Creating a pet object
-                        pets.add(newPet); //Adding the pet object to the arrayList
-                    } else {
-                        System.out.printf("ERROR: %d is not a valid age\n", petAge);
+            try {
+                petInfo = input.nextLine(); //Getting the pet name from a user input
+                if (petInfo.equalsIgnoreCase("done")) {
+                    exitAddPets = true; //If done is typed set the boolean to true to break out of the while loop
+                } else {
+                    try {
+                        String[] petInfoParts = petInfo.split("\\s");
+                        if (petInfoParts.length >= 3) { //Error handling for 3 or more inputs
+                            System.out.printf("ERROR: %s is not a valid entry user has tried to enter %d inputs \n", Arrays.toString(petInfoParts),petInfoParts.length);
+                            break;
+                        }
+                        String petName = petInfoParts[0];
+                        int petAge = Integer.parseInt(petInfoParts[1]);
+                        if (petAge > 0 && petAge <= 20) { //Making sure the pet is within a realistic age
+                            Pets newPet = new Pets(petID, petName, petAge); //Creating a pet object
+                            pets.add(newPet); //Adding the pet object to the arrayList
+                        } else {
+                            System.out.printf("ERROR: %d is not a valid age\n", petAge); //Error handling for invalid age
+                        }
+                    } catch (InputMismatchException ime) { //Error handling for an invalid name
+                        System.out.printf("ERROR: %s is not a valid pet entry\n", petInfo);
+                        input.nextLine(); //Clearing the scanner
                     }
-                } catch (Exception e) { //Error handling
-                    System.out.printf("ERROR: %s invalid entry\n", e);
                 }
+            } catch (ArrayIndexOutOfBoundsException e) {
+                System.out.printf("ERROR: %s is not a valid entry please try again.\n", petInfo);
             }
         }
+        saveDatabase(pets);
     }
 
     //Updating a pets information
-    public static void updatePet(ArrayList<Pets> pets) {
+    public static void updatePet(ArrayList<Pets> pets) throws IOException {
         printTable(pets);
         //Error handling incase for updating a pet
         try {
@@ -128,28 +144,39 @@ public class Main {
             + petAge);
         } catch (Exception e) {
             System.out.println("ERROR: Unable to update pet properly " + e);
+            input.nextLine();
         }
+        saveDatabase(pets);
     }
 
     //Removing a pet from the ArrayList
     public static void removePet(ArrayList<Pets> pets) throws IOException {
+        int petID = -1;
         if (pets.isEmpty()) {
             System.out.println("No pets in array");
         } else {
         printTable(pets);
         System.out.println("What is the ID of the pet you would like to remove: ");
-        int petID =  input.nextInt();
-        String petName = pets.get(petID).getName();
-        int petAge = pets.get(petID).getAge();
-        pets.remove(petID);
-        System.out.println("The pet " + petName + " " + petAge + " has been removed from the list of pets.");
-        //Decrementing all the ID's after the pet that was removed
-        for (Pets pet: pets) {
-            if ((petID < pet.getID())) {
-                pet.setID(pet.getID() - 1);
+        try {
+            petID = input.nextInt();
+            String petName = pets.get(petID).getName();
+            int petAge = pets.get(petID).getAge();
+            pets.remove(petID);
+            System.out.println("The pet " + petName + " " + petAge + " has been removed from the list of pets.");
+            //Decrementing all the ID's after the pet that was removed
+            for (Pets pet : pets) {
+                if ((petID < pet.getID())) {
+                    pet.setID(pet.getID() - 1);
                 }
             }
+        } catch (InputMismatchException ime) {
+            System.out.println("ERROR: Invalid ID entered");
+            input.nextLine();
+        } catch (IndexOutOfBoundsException iob) {
+            System.out.printf("ERROR: Invalid Index selected %d\n", petID);
         }
+        }
+        saveDatabase(pets);
     }
 
 
@@ -199,16 +226,26 @@ public class Main {
     }
 
     //Searching for pets by age
-    public static void searchPetAge(ArrayList<Pets> pets) {
+    public static void searchPetAge(ArrayList<Pets> pets) throws IOException {
         ArrayList<Pets> petSearch = new ArrayList<>();
         System.out.println("Enter age to search: ");
-        int userSearch = input.nextInt();
-        for (Pets pet : pets) {
-            if (pet.getAge() == userSearch) {
-                petSearch.add(pet);
+        try {
+            int userSearch = input.nextInt();
+            if (userSearch > 0 && userSearch <= 20) {
+                for (Pets pet : pets) {
+                    if (pet.getAge() == userSearch) {
+                        petSearch.add(pet);
+                    }
+                }
+                printTable(pets, petSearch);
+            } else {
+                System.out.printf("ERROR: Invalid age entered %d\n", userSearch);
             }
+        } catch (InputMismatchException ime) {
+            System.out.println("ERROR: Invalid input. You must enter a number between 1-20 to search for.");
+            input.nextLine();
+            menu(pets);
         }
-        printTable(pets, petSearch);
     }
 
     //Used to load the objects from the JSON database
