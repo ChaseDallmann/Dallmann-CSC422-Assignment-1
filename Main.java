@@ -32,7 +32,7 @@ public class Main {
             int userSelection = input.nextInt(); //Taking the users input
             menuLogic(userSelection, pets); //Calling the logic for the selection
         } catch (InputMismatchException ime) {
-            System.out.printf("ERROR: Invalid selection please use 1-7 as the options only");
+            System.out.printf("ERROR: Invalid selection please use 1-7 as the options only\n");
             input.nextLine();
             menu(pets);
         }
@@ -126,24 +126,35 @@ public class Main {
     //Updating a pets information
     public static void updatePet(ArrayList<Pets> pets) throws IOException {
         printTable(pets);
+        String petName = "";
+        int petAge = -1;
         //Error handling incase for updating a pet
         try {
             System.out.println("What is the ID of the pet you would like to update: ");
             int petID = input.nextInt();
             System.out.println("Please enter the name and the age of the pet: ");
             input.nextLine(); //Clearing the scanner
-            String petInfo = input.nextLine(); //Getting the pet name from a user input
-            String[] petInfoParts = petInfo.split("\\s");
-            String petName = petInfoParts[0];
-            int petAge = Integer.parseInt(petInfoParts[1]);
-            String oldName = pets.get(petID).getName(); //Previous Name
-            int oldAge = pets.get(petID).getAge(); //Previous Age
-            pets.get(petID).setName(petName); //Setting the new Name
-            pets.get(petID).setAge(petAge); //Setting the new Age
-            System.out.println("UPDATE SUCCESSFUL: " + oldName + " " + oldAge + " has been changed to " + petName + " "
-            + petAge);
-        } catch (Exception e) {
-            System.out.println("ERROR: Unable to update pet properly " + e);
+            String petInfo = input.nextLine(); //Getting the pet name and age from a user input
+            if (!petInfo.isEmpty()) {
+                String[] petInfoParts = petInfo.split("\\s");
+                if (petInfoParts.length < 3) {
+                    petName = petInfoParts[0]; // Getting the petName
+                    petAge = Integer.parseInt(petInfoParts[1]); //Getting the petAge
+                    String oldName = pets.get(petID).getName(); //Previous Name
+                    int oldAge = pets.get(petID).getAge(); //Previous Age
+                    pets.get(petID).setName(petName); //Setting the new Name
+                    pets.get(petID).setAge(petAge); //Setting the new Age
+                    System.out.println("UPDATE SUCCESSFUL: " + oldName + " " + oldAge + " has been changed to " + petName + " "
+                            + petAge); //Update success message
+                } else {
+                    System.out.printf("ERROR: Invalid number of entries detected %d\n", petInfoParts.length); //Invalid number of entries
+                }
+            }
+        } catch (NumberFormatException nfe) {
+            System.out.printf("ERROR: Unable to update pet properly %d is an invalid age \n", petAge); //If the user enters a name correct but not an age correctly
+            input.nextLine();
+        } catch (InputMismatchException ime) {
+            System.out.printf("ERROR: Invalid selection. The selection must be between 0 and %d\n", pets.size()); //If the user selects an ID that doesnt exist
             input.nextLine();
         }
         saveDatabase(pets);
