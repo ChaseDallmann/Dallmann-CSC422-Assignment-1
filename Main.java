@@ -320,4 +320,5 @@ https://www.baeldung.com/java-printstream-printf
 https://www.geeksforgeeks.org/arraylist-in-java/
 https://stackoverflow.com/questions/16111496/java-how-can-i-write-my-arraylist-to-a-file-and-read-load-that-file-to-the
 https://www.baeldung.com/java-scanner-buffer
+https://www.geeksforgeeks.org/different-ways-reading-text-file-java/
  */
